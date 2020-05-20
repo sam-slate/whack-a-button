@@ -1,0 +1,52 @@
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+
+#name-form{
+  margin-top:4px
+}
+
+#click-me-button{
+  touch-action: manipulation;
+  height: 80px;
+  width: 180px;
+}
+
+#main-content-container{
+  margin: 5%
+}
+
+.main-content-row{
+  margin: 10px
+}
+
+.element-full-width{
+  width: 100%
+}
+
+.jumbotron-message{
+  text-align: center;
+  vertical-align: middle;
+  font-size: 20px;
+}
+
+/* .jumbotron{
+  margin-top: -20px;
+  margin-bottom: -20px;
+} */
+
+h1,h2,h3,p{
+  padding:0;
+  margin:0;
+}
