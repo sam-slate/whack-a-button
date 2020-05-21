@@ -14,6 +14,7 @@ class MainContent extends React.Component {
 
         this.state = {
             name: "Enter Name",
+            entered_name: false,
             playing: false, 
             rounds: 10,
             scores: {},
@@ -113,7 +114,7 @@ class MainContent extends React.Component {
     }
 
     name_changed(e){
-        this.setState({name: e.target.value})
+        this.setState({name: e.target.value, entered_name: true})
 
         this.socket.emit('CHANGE_NAME', e.target.value)
     }
@@ -194,7 +195,7 @@ class MainContent extends React.Component {
                                             <InputGroup.Prepend>
                                                 <InputGroup.Text>Name</InputGroup.Text>
                                             </InputGroup.Prepend>
-                                            <Form.Control placeholder="Enter name" onChange={this.name_changed}/>
+                                            <Form.Control value={this.state.entered_name ? this.state.name : null} placeholder="Enter name" onChange={this.name_changed}/>
                                         </InputGroup>
                                     </Row>
                                     <Row className="main-content-row">
