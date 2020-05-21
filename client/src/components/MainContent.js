@@ -4,8 +4,8 @@ import Form from "react-bootstrap/Form"
 import Col from "react-bootstrap/Col"
 import Row from "react-bootstrap/Row"
 import Container from "react-bootstrap/Container"
-import Jumbotron from "react-bootstrap/Jumbotron"
 import InputGroup from "react-bootstrap/InputGroup"
+import Table from "react-bootstrap/Table"
 
 class MainContent extends React.Component {
 
@@ -15,9 +15,11 @@ class MainContent extends React.Component {
         this.state = {
             name: "Enter Name",
             playing: false, 
-            seconds: 10,
+            rounds: 10,
             scores: {},
-            message: "Enter your name and wait for others to join the scoreboard. Once everyone is ready, enter a number of seconds and click start!",
+            size: 4,
+            position: [],
+            message: "Enter your name and wait for others to join the scoreboard. Once everyone is ready, enter a number of rounds and click start!",
             jumbotron_color: "#E9ECEF"
         }
 
@@ -26,6 +28,7 @@ class MainContent extends React.Component {
         this.name_changed = this.name_changed.bind(this)
         this.start_clicked = this.start_clicked.bind(this)
         this.handle_click_me_key_down = this.handle_click_me_key_down.bind(this)
+        this.render_board = this.render_board.bind(this)
 
     }
 
@@ -44,53 +47,38 @@ class MainContent extends React.Component {
         });
 
         // Set up listener for the start
-        // Data should be a number of seconds and scores as an object
-        this.socket.on('START', (seconds, scores) => {
-            console.log("Recieved start with seconds of: " + seconds + "and scores of: ")
+        // Data should be a number of rounds, size of board, and and scores as an object
+        this.socket.on('START', (position, rounds, size, scores) => {
+            console.log("Recieved start with rounds of: " + rounds + "and scores of: ")
             console.log(scores)
 
-            // Change seconds, scores, message, and jumbotron color in state
-            this.setState({seconds: seconds, scores: scores, message: seconds + " seconds starts in: 3", jumbotron_color: "#fff8c7"})
+            // Change rounds, scores, message, and jumbotron color in state
+            this.setState({rounds: rounds, scores: scores, message: rounds + " rounds starts in: 3", jumbotron_color: "#fff8c7"})
 
             setTimeout(()=>{
-                this.setState({message: seconds + " seconds starts in: 2"})
+                this.setState({message: rounds + " rounds starts in: 2"})
 
                 setTimeout(()=>{
-                    this.setState({message: seconds + " seconds starts in: 1"})
+                    this.setState({message: rounds + " rounds starts in: 1"})
                     setTimeout(()=>{
-                        this.setState({message: seconds + " seconds", playing: true, jumbotron_color: "#ffd2c7"})
-
-                        var x = seconds - 1;
-                        var intervalID = setInterval(() => {
-                            if (x ===  1){
-                                this.setState({message: x + " second"})
-                            } else {
-                                this.setState({message: x + " seconds"})
-                            }
-
-                            if (--x === -1) {
-                                clearInterval(intervalID);
-
-                                var scores_array = this.create_scores_array()
-
-                                var game_over_message = "Game over! Winner was: " + scores_array[0][0]
-
-                                // Check if there are more than 1 players
-                                if (scores_array.length > 1){
-                                    // Check to see if the top two scores are the same
-                                    if(scores_array[0][1] === scores_array[1][1]){
-                                        game_over_message = "Game over! It was a tie!"
-                                    }
-                                }
-
-                                this.setState({message: game_over_message, jumbotron_color: "#cdffc7"})
-
-                            }
-                        }, 1000);
+                        this.setState({message: rounds + " to go", position: position, playing: true, jumbotron_color: "#ffd2c7"})
                         
                     }, 1000)
                 }, 1000)
             }, 1000)
+
+        })
+
+        // Set up listener for a new board
+        // Data should be board as a list, rounds_left as a number, prevoius_clicker as a string, and scores as an object
+        this.socket.on('NEW_BOARD', (position, rounds_left, previous_clicker, scores) =>{
+            console.log("Recieved new position, rounds_left: " + rounds_left + " and previous_clicker: " + previous_clicker)
+            console.log(position)
+
+            var new_message = previous_clicker + " clicked first! " + rounds_left + " to go"
+
+            this.setState({scores: scores, position: position, message: new_message})
+
 
         })
 
@@ -100,7 +88,18 @@ class MainContent extends React.Component {
             console.log("Recieved finish with scores:")
             console.log(scores)
 
-            this.setState({scores: scores, playing: false})
+            var scores_array = this.create_scores_array()
+            var game_over_message = "Game over! Winner was: " + scores_array[0][0]
+
+            // Check if there are more than 1 players
+            if (scores_array.length > 1){
+                // Check to see if the top two scores are the same
+                if(scores_array[0][1] === scores_array[1][1]){
+                    game_over_message = "Game over! It was a tie!"
+                }
+            }
+
+            this.setState({scores: scores, message: game_over_message, playing: false, jumbotron_color: "#cdffc7"})
         })
     }
 
@@ -128,7 +127,7 @@ class MainContent extends React.Component {
     }
 
     start_clicked(){
-        this.socket.emit('START_CLICK', this.state.seconds)
+        this.socket.emit('START_CLICK', this.state.rounds)
 
         console.log('start button clicked')
     }
@@ -147,6 +146,27 @@ class MainContent extends React.Component {
         return scores_array
     }
 
+    render_board(){
+        var rows = []
+        
+        for (var i = 0; i < this.state.size; i++) {
+            var row = []
+            for (var j = 0; j < this.state.size; j++) {
+                if (this.state.position[0] === i && this.state.position[1] === j){
+                    row.push(<td key={j} className="board-cell">
+                        <button type="button" id="click-me-button" className="btn btn-primary" onClick={this.button_clicked} onKeyDown={this.handle_click_me_key_down}></button>
+                    </td>)
+                } else {
+                    row.push(<td key={j} className="board-cell">________</td>)
+                }
+            }
+
+            rows.push(<tr key={i} className="board-row">{row}</tr>)
+        }
+
+        return rows
+    }
+
     render(){
 
         return(
@@ -160,7 +180,11 @@ class MainContent extends React.Component {
                             </Row>
                             {this.state.playing ?
                                 <Row className="main-content-row justify-content-center">
-                                    <button type="button" id="click-me-button" className="btn btn-primary btn-lg" onClick={this.button_clicked} onKeyDown={this.handle_click_me_key_down}>Click Me</button>
+                                    <Table bordered>
+                                        <tbody>
+                                            {this.render_board()} 
+                                        </tbody>
+                                    </Table>
                                 </Row>
                             : <></>}
                             {!this.state.playing ?
@@ -176,9 +200,9 @@ class MainContent extends React.Component {
                                     <Row className="main-content-row">
                                         <InputGroup className="mb-3">
                                             <InputGroup.Prepend>
-                                                <InputGroup.Text>Seconds</InputGroup.Text>
+                                                <InputGroup.Text>Rounds</InputGroup.Text>
                                             </InputGroup.Prepend>
-                                            <Form.Control value={this.state.seconds} onChange={e => {this.setState({seconds: e.target.value})}}/>
+                                            <Form.Control value={this.state.rounds} onChange={e => {this.setState({rounds: e.target.value})}}/>
                                             <InputGroup.Append>
                                                 <button type="button" id="start-button" className="btn btn-success btn-sm" onClick={this.start_clicked}>Start</button>
                                             </InputGroup.Append>
