@@ -119,12 +119,10 @@ class MainContent extends React.Component {
         this.socket.emit('CHANGE_NAME', e.target.value)
     }
 
-    button_clicked(event){
-        this.socket.emit('SEND_CLICK');
+    button_clicked(){
+        this.socket.emit('SEND_CLICK', this.state.position);
 
         console.log("button clicked")
-
-        // event.preventDefault()
     }
 
     start_clicked(){
@@ -195,7 +193,7 @@ class MainContent extends React.Component {
                                             <InputGroup.Prepend>
                                                 <InputGroup.Text>Name</InputGroup.Text>
                                             </InputGroup.Prepend>
-                                            <Form.Control value={this.state.entered_name ? this.state.name : null} placeholder="Enter name" onChange={this.name_changed}/>
+                                            <Form.Control type="text" value={this.state.entered_name ? this.state.name : null} placeholder="Enter name" onChange={this.name_changed}/>
                                         </InputGroup>
                                     </Row>
                                     <Row className="main-content-row">
@@ -203,7 +201,7 @@ class MainContent extends React.Component {
                                             <InputGroup.Prepend>
                                                 <InputGroup.Text>Rounds</InputGroup.Text>
                                             </InputGroup.Prepend>
-                                            <Form.Control value={this.state.rounds} onChange={e => {this.setState({rounds: e.target.value})}}/>
+                                            <Form.Control type="number" value={this.state.rounds} onChange={e => {this.setState({rounds: e.target.value})}}/>
                                             <InputGroup.Append>
                                                 <button type="button" id="start-button" className="btn btn-success btn-sm" onClick={this.start_clicked}>Start</button>
                                             </InputGroup.Append>

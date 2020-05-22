@@ -77,37 +77,35 @@ io.on('connection', (socket) => {
     io.emit('UPDATE_SCORES', scores);
 
     // Set up a listener to a send click emit
-    socket.on('SEND_CLICK', function(){
+    socket.on('SEND_CLICK', function(position){
         // Log everything
-        console.log("Received SEND_CLICK from " + socket.id)
+        console.log("Received SEND_CLICK from " + socket.id + " with position of: " + position)
+        console.log("Current position is: " + current_position)
+        // Check if we are currently playing, a click has yet to be recieved, and the sent position
+        // matches the current position
+        if (playing && !first_click_yet && position[0] === current_position[0] && position[1] === current_position[1]){
+            console.log(scores[socket.id]["name"] + " has clicked first!")
+            //Update first_click_yet
+            first_click_yet = true
+            // Add to score table
+            scores[socket.id]["score"] += 1
 
-        // Check if we are currently playing
-        if (playing){
-            // Check if a click has yet to be recieved
-            if (!first_click_yet){
-                console.log(scores[socket.id]["name"] + " has clicked first!")
-                //Update first_click_yet
-                first_click_yet = true
-                // Add to score table
-                scores[socket.id]["score"] += 1
+            // Check if there are rounds left
+            if (rounds === 1){
+                playing = false
 
-                // Check if there are rounds left
-                if (rounds === 1){
-                    playing = false
+                // Emit finish with scores
+                io.emit('FINISH', scores)
+                first_click_yet = false
+            } else {
+                // Generate a new position
+                current_position = generate_new_position(size, current_position)
+                //Decrement rounds
+                rounds--
 
-                    // Emit finish with scores
-                    io.emit('FINISH', scores)
-                    first_click_yet = false
-                } else {
-                    // Generate a new position
-                    current_position = generate_new_position(size, current_position)
-                    //Decrement rounds
-                    rounds--
-
-                    io.emit('NEW_BOARD', current_position, rounds, scores[socket.id]["name"], scores)
-                    first_click_yet = false
-                }
-            }  
+                io.emit('NEW_BOARD', current_position, rounds, scores[socket.id]["name"], scores)
+                first_click_yet = false
+            }
         }
     })
 
