@@ -115,12 +115,15 @@ io.on('connection', (socket) => {
         console.log("Received CHANGE_NAME from " + socket.id + " with name of:")
         console.log(name)
 
-        scores[socket.id]["name"] = name
+        if (!playing){
 
-        io.emit('UPDATE_SCORES', scores);
+            scores[socket.id]["name"] = name
 
-        console.log("Sending back scores of:")
-        console.log(scores)
+            io.emit('UPDATE_SCORES', scores);
+
+            console.log("Sending back scores of:")
+            console.log(scores)
+        }
     })
 
     // Set up listener for a start click emit
@@ -131,6 +134,9 @@ io.on('connection', (socket) => {
 
         // Check if already playing
         if (!playing){
+
+            // Update playing
+            playing = true
 
             // Update rounds
             rounds = rounds_received
@@ -150,9 +156,6 @@ io.on('connection', (socket) => {
             // Wait for the countdown to stop
             setTimeout(()=>{
                 console.log("Ending countdown")
-
-                // Update playing
-                playing = true
                 
             }, 3000)
             
