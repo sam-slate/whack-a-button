@@ -6,6 +6,8 @@ import Row from "react-bootstrap/Row"
 import Container from "react-bootstrap/Container"
 import InputGroup from "react-bootstrap/InputGroup"
 import Table from "react-bootstrap/Table"
+import Sound from 'react-sound'
+import countdown_sound from '../sounds/countdown.mp3'
 
 class MainContent extends React.Component {
 
@@ -21,7 +23,8 @@ class MainContent extends React.Component {
             size: 4,
             position: [],
             message: "Enter your name and wait for others to join the scoreboard. Once everyone is ready, enter a number of rounds and click start!",
-            jumbotron_color: "#E9ECEF"
+            jumbotron_color: "#E9ECEF",
+            sound_play: Sound.status.STOPPED
         }
 
         this.button_clicked = this.button_clicked.bind(this)
@@ -53,14 +56,14 @@ class MainContent extends React.Component {
             console.log("Recieved start with rounds of: " + rounds + "and scores of: ")
             console.log(scores)
 
-            // Change rounds, scores, message, and jumbotron color in state
-            this.setState({rounds: rounds, scores: scores, message: rounds + " rounds starts in: 3", jumbotron_color: "#fff8c7"})
+            // Change rounds, scores, message, jumbotron color, and sound in state
+            this.setState({rounds: rounds, scores: scores, message: rounds + " rounds starts in: 3", jumbotron_color: "#fff8c7", sound_play: Sound.status.PLAYING})
 
             setTimeout(()=>{
-                this.setState({message: rounds + " rounds starts in: 2"})
+                this.setState({message: rounds + " rounds starts in: 2", sound_play: Sound.status.PLAYING})
 
                 setTimeout(()=>{
-                    this.setState({message: rounds + " rounds starts in: 1"})
+                    this.setState({message: rounds + " rounds starts in: 1", sound_play: Sound.status.PLAYING})
                     setTimeout(()=>{
                         this.setState({message: rounds + " to go", position: position, playing: true, jumbotron_color: "#ffd2c7"})
                         
@@ -170,6 +173,11 @@ class MainContent extends React.Component {
 
         return(
                 <Container id="main-content-container">
+                     <Sound
+                        url={countdown_sound}
+                        playStatus={this.state.sound_play}
+                        onFinishedPlaying={()=>this.setState({sound_play: Sound.status.STOPPED})}
+                    />
                     <Row>
                         <Col md={{ span: 4, offset: 4 }}>
                             <Row className="main-content-row">
@@ -193,7 +201,7 @@ class MainContent extends React.Component {
                                             <InputGroup.Prepend>
                                                 <InputGroup.Text>Name</InputGroup.Text>
                                             </InputGroup.Prepend>
-                                            <Form.Control type="text" value={this.state.entered_name ? this.state.name : null} placeholder="Enter name" onChange={this.name_changed}/>
+                                            <Form.Control type="text" value={this.state.entered_name ? this.state.name : ""} placeholder="Enter name" onChange={this.name_changed}/>
                                         </InputGroup>
                                     </Row>
                                     <Row className="main-content-row">
